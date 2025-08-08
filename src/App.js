@@ -1,25 +1,24 @@
-import logo from './logo.svg';
-import './App.css';
+// App.js
 
-function App() {
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import ReddyLogin from './ReddyLogin/ReddyLogin.jsx';
+import AdminChat from './pages/AdminChat/AdminChat.jsx'; 
+import { ChatProvider } from "../src/ChatContext/ChatContext.js.jsx";
+import ChatPage from '../src/ChatPage/Chatpage.jsx'
+import AdminDashboard from './pages/AdminChat/AdminDashboard.jsx';
+
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ChatProvider>
+    <Routes>
+      <Route path="/" element={<ReddyLogin />} />
+     <Route path="/chat" element={<ChatPage/>} />
+    <Route path="/admin" element={<AdminChat />} />
+    <Route path="/admin/chat" element={<AdminDashboard />} />
+    </Routes>
+    </ChatProvider>
   );
-}
+};
 
 export default App;
