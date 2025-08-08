@@ -3,7 +3,7 @@ import { useState } from "react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { doc, setDoc, increment } from "firebase/firestore";
 import { db } from "../firebase";
-import SendRoundedIcon from '@mui/icons-material/SendRounded';
+// import SendRoundedIcon from '@mui/icons-material/SendRounded';
 const MessageInput = ({ chatId, senderId }) => {
   const [text, setText] = useState("");
 
