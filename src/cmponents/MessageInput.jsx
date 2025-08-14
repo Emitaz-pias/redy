@@ -1,59 +1,57 @@
 import { Box, TextField, IconButton } from "@mui/material";
+import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import { useState } from "react";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { doc, setDoc, increment } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, setDoc, increment } from "firebase/firestore";
 import { db } from "../firebase";
-// import SendRoundedIcon from '@mui/icons-material/SendRounded';
+
 const MessageInput = ({ chatId, senderId }) => {
   const [text, setText] = useState("");
 
- const handleSend = async () => {
-  if (!text.trim()) return;
+  const handleSend = async () => {
+    if (!text.trim()) return;
 
-  const messageData = {
-    text,
-    senderId,
-    createdAt: serverTimestamp(),
+    const message = {
+      text,
+      senderId,
+      createdAt: serverTimestamp(),
+    };
+
+    try {
+      await addDoc(collection(db, "chats", chatId, "messages"), message);
+      await setDoc(
+        doc(db, "chats", chatId),
+        {
+          lastMessage: {
+            text,
+            timestamp: serverTimestamp(),
+            senderId,
+          },
+          unreadCount: {
+            admin: senderId === "admin" ? 0 : increment(1),
+            [senderId]: 0,
+          },
+        },
+        { merge: true }
+      );
+      setText("");
+    } catch (error) {
+      console.error("Message send error:", error);
+    }
   };
 
-  // 1️⃣ Send message to subcollection
-  await addDoc(collection(db, "chats", chatId, "messages"), messageData);
-
-  // 2️⃣ Update parent chat doc (main point!)
-  await setDoc(
-    doc(db, "chats", chatId),
-    {
-      lastMessage: {
-        text,
-        timestamp: serverTimestamp(),
-        senderId,
-      },
-      unreadCount: {
-        // jodi admin pathai, user er unread barabe
-        // jodi user pathai, admin er unread barabe
-        admin: senderId === "admin" ? 0 : increment(1),
-        [senderId]: 0
-      }
-    },
-    { merge: true }
-  );
-
-  setText("");
-};
   return (
-    <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
       <TextField
         fullWidth
         variant="outlined"
         size="small"
-        placeholder="Write message..."
+        placeholder="Write a message..."
         value={text}
         onChange={(e) => setText(e.target.value)}
-        onKeyPress={(e) => e.key === "Enter" && handleSend()}
-      /> 
-     
+        onKeyDown={(e) => e.key === "Enter" && handleSend()}
+      />
       <IconButton color="primary" onClick={handleSend}>
-        {'>>'}
+        <SendRoundedIcon />
       </IconButton>
     </Box>
   );
