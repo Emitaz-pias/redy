@@ -42,7 +42,7 @@ const ChatWindow = ({ chatId, onBack }) => {
       </Box>
     );
   }
-
+// new icon button added
   const isServiceChat = chatId === "service-user";
 
   return (
@@ -80,6 +80,7 @@ const ChatWindow = ({ chatId, onBack }) => {
               <ArrowBackIcon />
             </IconButton>
           )}
+          
           <Avatar sx={{ width: 32, height: 32 }}>{TITLES[chatId]?.[0] || "C"}</Avatar>
           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
             {TITLES[chatId] || "Chat"}
