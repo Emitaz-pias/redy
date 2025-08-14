@@ -1,5 +1,5 @@
 import { Box, TextField, IconButton } from "@mui/material";
-import SendRoundedIcon from "@mui/icons-material/SendRounded";
+import SendIcon from '@mui/icons-material/Send';
 import { useState } from "react";
 import { collection, addDoc, serverTimestamp, doc, setDoc, increment } from "firebase/firestore";
 import { db } from "../firebase";
@@ -51,7 +51,7 @@ const MessageInput = ({ chatId, senderId }) => {
         onKeyDown={(e) => e.key === "Enter" && handleSend()}
       />
       <IconButton color="primary" onClick={handleSend}>
-        <SendRoundedIcon />
+        <SendIcon />
       </IconButton>
     </Box>
   );

@@ -12,12 +12,14 @@ import {
   BottomNavigation,
   BottomNavigationAction,
 } from "@mui/material";
-import MarkChatUnreadRoundedIcon from "@mui/icons-material/MarkChatUnreadRounded";
+import MarkChatUnreadRoundedIcon from '@mui/icons-material/MarkChatUnreadRounded';
 import ChatIcon from "@mui/icons-material/Chat";
 import CallIcon from "@mui/icons-material/Call";
 import PeopleIcon from "@mui/icons-material/People";
 import SettingsIcon from "@mui/icons-material/Settings";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+
 const ChatPage = () => {
   const { isAdmin } = useChat();
   const [activeChat, setActiveChat] = useState(localStorage.getItem("chatWith") || null);
