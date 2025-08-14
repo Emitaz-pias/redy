@@ -64,28 +64,38 @@ const ChatWindow = ({ chatId, onBack }) => {
         }}
       >
         {/* Header */}
-        <Box
-          sx={{
-            px: 2,
-            py: 1.5,
-            borderBottom: "1px solid #e0e0e0",
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            bgcolor: "#fff",
-          }}
-        >
-          {onBack && (
-            <IconButton onClick={onBack} sx={{ display: { xs: "inline-flex", md: "none" } }}>
-              <ArrowBackIcon />
-            </IconButton>
-          )}
-          
-          <Avatar sx={{ width: 32, height: 32 }}>{TITLES[chatId]?.[0] || "C"}</Avatar>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-            {TITLES[chatId] || "Chat"}
-          </Typography>
-        </Box>
+       <Box
+  sx={{
+    px: 2,
+    py: 1.5,
+    borderBottom: "1px solid #e0e0e0",
+    display: "flex",
+    alignItems: "center",
+    gap: 1.5,
+    bgcolor: "#fff",
+  }}
+>
+  {/* Back button for mobile only */}
+  {onBack && (
+    <IconButton
+      onClick={onBack}
+      sx={{       
+        mr: 1, // gives breathing room between icon and avatar
+      }}
+    >
+      <ArrowBackIcon />
+    </IconButton>
+  )}
+
+  <Avatar sx={{ width: 32, height: 32 }}>
+    {TITLES[chatId]?.[0] || "C"}
+  </Avatar>
+
+  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+    {TITLES[chatId] || "Chat"}
+  </Typography>
+</Box>
+
 
         {/* Messages */}
         <Box
