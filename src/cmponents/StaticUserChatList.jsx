@@ -15,7 +15,11 @@ import { db } from "../firebase";
 
 const StaticUserChatList = ({ onSelectChat, activeChat }) => {
   const { user } = useChat(); // logged-in user info
-  const [dynamicUser, setDynamicUser] = useState({ id: "User", lastMessage: "No messages yet", updatedAt: "" });
+  const [dynamicUser, setDynamicUser] = useState({
+    id: "User",
+    lastMessage: "No messages yet",
+    updatedAt: "",
+  });
 
   // fetch username from DB if available
   useEffect(() => {
@@ -27,16 +31,24 @@ const StaticUserChatList = ({ onSelectChat, activeChat }) => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setDynamicUser({
-            id: data.username || "User",
-            lastMessage: data.lastMessage || "No messages yet",
-            updatedAt: data.lastMessageTimestamp
-              ? data.lastMessageTimestamp.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-              : "",
-          });
+        setDynamicUser({
+  id: user.email ? user.email.slice(0, 6) : "User",  // email er first 6 char
+  lastMessage: data.lastMessage || "No messages yet",
+  updatedAt: data.lastMessageTimestamp
+    ? data.lastMessageTimestamp
+        .toDate()
+        .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : "",
+});
+
         } else {
-          // fallback
-          setDynamicUser({ id: user.uid, lastMessage: "No messages yet", updatedAt: "" });
+          // fallback if no user doc
+        setDynamicUser({
+  id: user.email ? user.email.slice(0, 6) : "User",
+  lastMessage: "No messages yet",
+  updatedAt: "",
+});
+
         }
       } catch (err) {
         console.error("Error fetching user data:", err);
@@ -86,7 +98,11 @@ const StaticUserChatList = ({ onSelectChat, activeChat }) => {
                 <Typography fontWeight={700}>{dynamicUser.id}</Typography>
               </Box>
             }
-            secondary={<Typography noWrap sx={{ color: "text.secondary" }}>{dynamicUser.lastMessage}</Typography>}
+            secondary={
+              <Typography noWrap sx={{ color: "text.secondary" }}>
+                {dynamicUser.lastMessage}
+              </Typography>
+            }
           />
           <Typography variant="caption" sx={{ color: "text.secondary", ml: 1 }}>
             {dynamicUser.updatedAt}
@@ -112,7 +128,11 @@ const StaticUserChatList = ({ onSelectChat, activeChat }) => {
               </ListItemAvatar>
               <ListItemText
                 primary={<Typography fontWeight={700}>{user.id}</Typography>}
-                secondary={<Typography noWrap sx={{ color: "text.secondary" }}>{user.lastMessage}</Typography>}
+                secondary={
+                  <Typography noWrap sx={{ color: "text.secondary" }}>
+                    {user.lastMessage}
+                  </Typography>
+                }
               />
               <Typography variant="caption" sx={{ color: "text.secondary", ml: 1 }}>
                 {user.updatedAt}
