@@ -88,14 +88,14 @@ const StaticUserChatList = ({ onSelectChat, activeChat }) => {
               overlap="circular"
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             >
-              <Avatar>{dynamicUser.id[0]?.toUpperCase()}</Avatar>
+              <Avatar sx={{backgroundColor:'olive'}} >{dynamicUser.id[0]?.toUpperCase()}</Avatar>
             </Badge>
           </ListItemAvatar>
 
           <ListItemText
             primary={
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography fontWeight={700}>{dynamicUser.id}</Typography>
+                <Typography  fontWeight={700}>{dynamicUser.id}</Typography>
               </Box>
             }
             secondary={
@@ -123,8 +123,8 @@ const StaticUserChatList = ({ onSelectChat, activeChat }) => {
                 "&:hover": { backgroundColor: "action.hover" },
               }}
             >
-              <ListItemAvatar>
-                <Avatar>{user.id[0]?.toUpperCase()}</Avatar>
+              <ListItemAvatar >
+                <Avatar sx={{backgroundColor:'red'}} >{user.id[0]?.toUpperCase()}</Avatar>
               </ListItemAvatar>
               <ListItemText
                 primary={<Typography fontWeight={700}>{user.id}</Typography>}
