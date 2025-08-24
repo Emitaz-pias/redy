@@ -1,4 +1,4 @@
-// /src/context/ChatContext.js
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../../src/firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -16,7 +16,7 @@ export const ChatProvider = ({ children }) => {
       if (u) {
         const docRef = doc(db, "admins", u.uid);
         const docSnap = await getDoc(docRef);
-        setIsAdmin(docSnap.exists()); // admin user check
+        setIsAdmin(docSnap.exists());
       }
     });
     return () => unsub();

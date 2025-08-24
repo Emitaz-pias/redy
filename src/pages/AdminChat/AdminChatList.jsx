@@ -17,14 +17,21 @@ const AdminChatList = ({ onSelectChat, selectedChatId }) => {
 
   return (
     <>
-      <Typography variant="h6" mb={2}>Active Chats</Typography>
+      <Typography variant="h6" mb={2}>
+        Active Chats
+      </Typography>
       <List>
         {chats.map(chat => {
           const unreadAdmin = chat.unreadCount?.admin || 0;
           return (
-            <ListItem button key={chat.id} selected={chat.id === selectedChatId} onClick={() => onSelectChat(chat.id)}>
+            <ListItem
+              button
+              key={chat.id}
+              selected={chat.id === selectedChatId}
+              onClick={() => onSelectChat(chat.id)}
+            >
               <ListItemText
-                primary={chat.userName || chat.id}
+                primary={chat.userName.slice(0,6) || chat.id}
                 secondary={chat.lastMessage?.text || "No messages yet"}
               />
               {unreadAdmin > 0 && <Badge color="error" badgeContent={unreadAdmin} />}

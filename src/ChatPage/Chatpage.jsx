@@ -1,174 +1,206 @@
 import React, { useState } from "react";
-import { Grid, useMediaQuery, Box, IconButton, Badge } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { useChat } from "../../src/ChatContext/ChatContext.js";
-import ChatWindow from "../cmponents/ChatWindow.jsx";
-import UserChatList from "../cmponents/UserChatList.jsx";
-import StaticUserChatList from "../cmponents/StaticUserChatList.jsx";
 import {
+  Grid,
+  Box,
+  IconButton,
   AppBar,
   Toolbar,
+  Typography,
   BottomNavigation,
   BottomNavigationAction,
-  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
 } from "@mui/material";
-import MarkChatUnreadRoundedIcon from '@mui/icons-material/MarkChatUnreadRounded';
+import UserChatList from "../cmponents/UserChatList";
+import ChatWindow from "../cmponents/ChatWindow";
+
+import MarkChatUnreadRoundedIcon from "@mui/icons-material/MarkChatUnreadRounded";
 import ChatIcon from "@mui/icons-material/Chat";
 import CallIcon from "@mui/icons-material/Call";
 import PeopleIcon from "@mui/icons-material/People";
 import SettingsIcon from "@mui/icons-material/Settings";
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { signOut } from "firebase/auth";
+
 import { auth } from "../firebase";
+import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
+const STATIC_USERS = [
+  { id: "user1", name: "User One" },
+  { id: "user2", name: "User Two" },
+];
+
+const colors = {
+  background: "#fafafa",
+  surface: "#ffffff",
+  primary: "#d32f2f",
+  text: "#212121",
+  icon: "#616161",
+};
+
 const ChatPage = () => {
-  const { isAdmin } = useChat();
-  const [activeChat, setActiveChat] = useState(localStorage.getItem("chatWith") || null);
+  const [activeChat, setActiveChat] = useState(null);
+  const [navValue, setNavValue] = useState(0);
+  const [openDialog, setOpenDialog] = useState(false);
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
-
-  const handleSelectChat = (uid) => {
-    localStorage.setItem("chatWith", uid);
-    setActiveChat(uid);
-  };
-
-  const handleBack = () => {
-    setActiveChat(null);
-    localStorage.removeItem("chatWith");
-  };
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       localStorage.clear();
-      navigate("/");
+      navigate("/login");
     } catch (err) {
       console.error("Logout error:", err);
     }
   };
 
+  const handleSelectChat = (chatId) => {
+    setActiveChat(chatId);
+  };
+
+  const handleBackToList = () => {
+    setActiveChat(null);
+  };
+  
+  const currentChatId = activeChat || STATIC_USERS[0].id;
+console.log(activeChat)
   return (
-    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", bgcolor: "#f4f4f6" }}>
-      {/* Top Navbar */}
+    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <AppBar
         position="static"
+        elevation={0}
         sx={{
-          background: "linear-gradient(90deg, #f04343ff 0%, #b81818ff 80%)",
-          color: "#fff",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          borderBottom: "1px solid #e0e0e0",
+          backgroundColor: colors.primary,
         }}
       >
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Box sx={{ fontWeight: 700, fontSize: "1.3rem" }}>Reddy Chat</Box>
-          <Box>
-            <IconButton sx={{ "&:hover": { bgcolor: "rgba(255,255,255,0.1)" } }}>
-              <SearchRoundedIcon sx={{ color: "#fff" }} />
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            maxWidth: "1200px",
+            width: "100%",
+            mx: "auto",
+            px: { xs: 1, sm: 2 },
+          }}
+        >
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{
+              color: "#fff",
+              fontSize: { xs: "1rem", sm: "1.25rem" },
+              flexShrink: 0,
+              whiteSpace: "nowrap",
+            }}
+          >
+            Reddy Chat
+          </Typography>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1 } }}>
+            <IconButton sx={{ color: "#fff" }}>
+              <SearchRoundedIcon />
             </IconButton>
-            <IconButton sx={{ "&:hover": { bgcolor: "rgba(255,255,255,0.1)" } }}>
-              <Badge badgeContent={3} color="error">
-                <MarkChatUnreadRoundedIcon sx={{ color: "#fff" }} />
-              </Badge>
+            <IconButton sx={{ color: "#fff" }}>
+              <MarkChatUnreadRoundedIcon />
+            </IconButton>
+            <IconButton onClick={handleLogout} sx={{ color: "#fff" }}>
+              <LogoutIcon />
             </IconButton>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Main Content */}
-      <Box sx={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        <Grid container sx={{ height: "100%" }}>
-          {/* Sidebar */}
-          {(!isMobile || !activeChat) && (
-            <Grid
-              item
-              xs={12}
-              md={4}
-              sx={{
-                borderRight: { md: "1px solid #e0e0e0" },
-                height: "100%",
-                overflowY: "auto",
-                bgcolor: "#fff",
-                boxShadow: "inset 0 0 15px rgba(0,0,0,0.02)",
-                borderRadius: { md: "8px 0 0 8px" },
-              }}
-            >
-              {isAdmin ? (
-                <UserChatList onSelectChat={handleSelectChat} activeChat={activeChat} />
-              ) : (
-                <StaticUserChatList onSelectChat={handleSelectChat} activeChat={activeChat} />
-              )}
-            </Grid>
-          )}
-
-          {/* Chat Window / Placeholder */}
-          <Grid
-            item
-            xs={12}
-            md={8}
-            sx={{
-              height: "100%",
-              borderRadius: { md: "0 8px 8px 0" },
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              position: "relative",
-              transition: "all 0.3s ease",
-              bgcolor: activeChat
-                ? "#fff"
-                : "linear-gradient(135deg, #f37e7eff 0%, #fd7a7aff 100%)",
-            }}
-          >
-            {!activeChat ? (
-              <Box
-                sx={{
-                  bgcolor: "rgba(255,255,255,0.2)",
-                  px: 5,
-                  py: 4,
-                  borderRadius: 3,
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: "1.3rem",
-                  textAlign: "center",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                  animation: "float 3s ease-in-out infinite",
-                }}
-              >
-                💬 Select a chat to start messaging
-              </Box>
-            ) : (
-              <ChatWindow chatId={activeChat} onBack={handleBack} />
-            )}
-          </Grid>
+      <Grid container sx={{ flex: 1, minHeight: 0 }}>
+        <Grid
+          item
+          xs={12}
+          md={4}
+          sx={{
+            display: { xs: activeChat ? "none" : "block", md: "block" },
+            borderRight: { md: "1px solid #e0e0e0" },
+            height: "100%",
+            overflowY: "auto",
+            backgroundColor: colors.surface,
+          }}
+        >
+          <UserChatList
+            staticUsers={STATIC_USERS}
+            onSelectChat={handleSelectChat}
+            activeChat={activeChat}
+          />
         </Grid>
+
+        <Grid
+          item
+          xs={12}
+          md={8}
+          sx={{
+            display: { xs: activeChat ? "block" : "none", md: "block" },
+            height: "100%",
+            flexDirection: "column",
+            backgroundColor: "#f5f5f5",
+          }}
+        >
+          <ChatWindow
+            chatId={currentChatId}
+            userId={currentChatId}
+            onBack={handleBackToList}
+          />
+        </Grid>
+      </Grid>
+
+      <Box
+        sx={{
+          display: { xs: "block", md: "block" },
+          borderTop: "1px solid #ddd",
+        }}
+      >
+        <BottomNavigation
+          value={navValue}
+          onChange={(e, newValue) => {
+            setNavValue(newValue);
+            if (newValue !== 0) {
+              setOpenDialog(true);
+            }
+          }}
+          showLabels
+          sx={{
+            backgroundColor: colors.surface,
+            "& .MuiBottomNavigationAction-root": {
+              color: colors.icon,
+            },
+            "& .Mui-selected": {
+              color: colors.primary,
+            },
+          }}
+        >
+          <BottomNavigationAction label="Chats" icon={<ChatIcon />} />
+          <BottomNavigationAction label="Calls" icon={<CallIcon />} />
+          <BottomNavigationAction label="Contacts" icon={<PeopleIcon />} />
+          <BottomNavigationAction label="Settings" icon={<SettingsIcon />} />
+        </BottomNavigation>
       </Box>
 
-      {/* Bottom Navigation */}
-      <Paper elevation={3}>
-        <BottomNavigation sx={{ borderTop: "1px solid #e0e0e0", bgcolor: "#fff" }}>
-          <BottomNavigationAction sx={{ color: "#cc0000" }} label="Chats" icon={<ChatIcon />} />
-          <BottomNavigationAction sx={{ color: "#cc0000" }} label="Calls" icon={<CallIcon />} />
-          <BottomNavigationAction sx={{ color: "#cc0000" }} label="Contacts" icon={<PeopleIcon />} />
-          <BottomNavigationAction sx={{ color: "#cc0000" }} label="Settings" icon={<SettingsIcon />} />
-          <IconButton onClick={handleLogout} sx={{ ml: 1 }}>
-            <LogoutIcon sx={{ color: "#cc0000" }} />
-          </IconButton>
-        </BottomNavigation>
-      </Paper>
-
-      {/* Floating animation */}
-      <style>
-        {`
-          @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
-            100% { transform: translateY(0px); }
-          }
-        `}
-      </style>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Service Not Available!</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: "#f00" }}>
+            Ei service gula ei account er jonno projojjo na.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} autoFocus>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

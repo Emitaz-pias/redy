@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Box, List, ListItem, TextField, Button } from "@mui/material";
-import { collection, query, orderBy, onSnapshot, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, doc, updateDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const AdminChatWindow = ({ chatId }) => {
@@ -8,6 +8,7 @@ const AdminChatWindow = ({ chatId }) => {
   const [text, setText] = useState("");
   const containerRef = useRef();
 
+  // Load messages
   useEffect(() => {
     if (!chatId) return;
     const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp"));
@@ -18,6 +19,7 @@ const AdminChatWindow = ({ chatId }) => {
     return () => unsubscribe();
   }, [chatId]);
 
+  // Scroll to bottom
   useEffect(() => {
     containerRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -25,15 +27,20 @@ const AdminChatWindow = ({ chatId }) => {
   const handleSend = async () => {
     if (!text.trim()) return;
 
+    // Add message
     await addDoc(collection(db, "chats", chatId, "messages"), {
       text,
-      sender: "admin",
-      timestamp: serverTimestamp()
+      senderId: "admin",
+      timestamp: serverTimestamp(),
     });
 
+    // Update last message & unread for user
     const chatDocRef = doc(db, "chats", chatId);
+    const chatSnap = await getDoc(chatDocRef);
+    const prevUnread = chatSnap.exists() ? chatSnap.data().unreadCount?.[chatId] || 0 : 0;
+
     await updateDoc(chatDocRef, {
-      lastMessage: { text, timestamp: serverTimestamp(), sender: "admin" },
+      lastMessage: { text, timestamp: serverTimestamp(), senderId: "admin" },
       [`unreadCount.${chatId}`]: 0
     });
 
@@ -44,14 +51,19 @@ const AdminChatWindow = ({ chatId }) => {
     <Box sx={{ height: "70vh", overflowY: "auto", p: 2, border: "1px solid #ccc", borderRadius: 2 }}>
       <List>
         {messages.map(msg => (
-          <ListItem key={msg.id} sx={{ justifyContent: msg.sender === "admin" ? "flex-end" : "flex-start" }}>
-            <Box sx={{
-              bgcolor: msg.sender === "admin" ? "primary.main" : "grey.300",
-              color: msg.sender === "admin" ? "white" : "black",
-              p: 1,
-              borderRadius: 2,
-              maxWidth: "70%"
-            }}>
+          <ListItem
+            key={msg.id}
+            sx={{ justifyContent: msg.senderId === "admin" ? "flex-end" : "flex-start" }}
+          >
+            <Box
+              sx={{
+                bgcolor: msg.senderId === "admin" ? "primary.main" : "grey.300",
+                color: msg.senderId === "admin" ? "white" : "black",
+                p: 1,
+                borderRadius: 2,
+                maxWidth: "70%",
+              }}
+            >
               {msg.text}
             </Box>
           </ListItem>
@@ -59,8 +71,16 @@ const AdminChatWindow = ({ chatId }) => {
         <div ref={containerRef} />
       </List>
       <Box sx={{ display: "flex", mt: 2 }}>
-        <TextField fullWidth placeholder="Type message..." value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSend()} />
-        <Button variant="contained" onClick={handleSend} sx={{ ml: 1 }}>Send</Button>
+        <TextField
+          fullWidth
+          placeholder="Type message..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+        />
+        <Button variant="contained" onClick={handleSend} sx={{ ml: 1 }}>
+          Send
+        </Button>
       </Box>
     </Box>
   );
