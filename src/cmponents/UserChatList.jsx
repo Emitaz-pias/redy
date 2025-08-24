@@ -9,30 +9,46 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
+import { useChat } from "../ChatContext/ChatContext.js"; // for current user info
 
 const UserChatList = ({ onSelectChat, activeChat }) => {
   const [users, setUsers] = useState([]);
+  const { user } = useChat(); // logged-in admin info
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "chats"), (snapshot) => {
-      const userList = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          lastMessage: data?.lastMessage?.text || "No messages yet",
-          updatedAt: data?.lastMessage?.timestamp
-            ? data.lastMessage.timestamp.toDate().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "",
-        };
+      const userList = snapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          // Only show chats meant for this admin or general service-user messages
+          if (data.userId && data.userId !== user.uid && data.userId !== "service-user") return null;
+
+          return {
+            id: doc.id,
+            lastMessage: data?.lastMessage?.text || "No messages yet",
+            updatedAt: data?.lastMessage?.timestamp
+              ? data.lastMessage.timestamp.toDate().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "",
+            originalUser: data.userId || doc.id, // preserve original sender
+          };
+        })
+        .filter(Boolean); // remove nulls
+
+      // Sort by lastMessage timestamp descending
+      userList.sort((a, b) => {
+        const ta = a.updatedAt ? new Date("1970/01/01 " + a.updatedAt) : 0;
+        const tb = b.updatedAt ? new Date("1970/01/01 " + b.updatedAt) : 0;
+        return tb - ta;
       });
+
       setUsers(userList);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user.uid]);
 
   return (
     <>
@@ -53,10 +69,10 @@ const UserChatList = ({ onSelectChat, activeChat }) => {
             }}
           >
             <ListItemAvatar>
-              <Avatar>{user.id[0]?.toUpperCase()}</Avatar>
+              <Avatar>{user.originalUser[0]?.toUpperCase()}</Avatar>
             </ListItemAvatar>
             <ListItemText
-              primary={<Typography fontWeight="bold">{user.id}</Typography>}
+              primary={<Typography fontWeight="bold">{user.originalUser}</Typography>}
               secondary={<Typography noWrap sx={{ color: "gray" }}>{user.lastMessage}</Typography>}
             />
             <Typography variant="caption" sx={{ color: "gray" }}>

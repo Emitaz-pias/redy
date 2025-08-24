@@ -7,12 +7,6 @@ import MessageInput from "./MessageInput";
 import { Box, Typography, IconButton, Avatar } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-const TITLES = {
-  "service-user": "Service User",
-  "authenticationBot": "Authentication Bot",
-  "CRM Bot": "CRM Bot",
-};
-
 const ChatWindow = ({ chatId, onBack }) => {
   const { user } = useChat();
   const [messages, setMessages] = useState([]);
@@ -20,24 +14,14 @@ const ChatWindow = ({ chatId, onBack }) => {
   const uid = user?.uid || "guest";
 
   useEffect(() => {
-  const q = query(
-    collection(db, "chats", "service-user", "messages"),
-    orderBy("createdAt", "asc")
-  );
+    if (!chatId) return;
 
-  const unsub = onSnapshot(q, (snap) => {
-    const allMsgs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-    // ✅ Only show messages related to this user (if not admin)
-    const filtered = user?.role === "admin"
-      ? allMsgs
-      : allMsgs.filter((msg) => msg.senderId === uid || msg.senderId === "admin");
-
-    setMessages(filtered);
-  });
-
-  return () => unsub();
-}, [chatId, user, uid]);
+    const q = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"));
+    const unsub = onSnapshot(q, (snap) => {
+      setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsub();
+  }, [chatId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -50,60 +34,54 @@ const ChatWindow = ({ chatId, onBack }) => {
       </Box>
     );
   }
-// new icon button added
-  const isServiceChat = chatId === "service-user";
+
+  // Input condition: কোনো admin/static user chat হলে show করবে
+  const isUserChat = chatId && chatId !== "authenticationBot" && chatId !== "CRM Bot";
 
   return (
     <Box
       sx={{
         height: "100%",
         display: "flex",
-        justifyContent: "center", // center on large screens
+        justifyContent: "center",
         bgcolor: "#f0f2f5",
       }}
     >
       <Box
         sx={{
-          width: { xs: "100vw", md: "100vw" }, // full width on mobile, fixed width on desktop
+          width: { xs: "100vw", md: "100vw" },
           display: "flex",
           flexDirection: "column",
           bgcolor: "#f6f7fb",
-          boxShadow: { md: "0 0 10px rgba(0,0,0,0.05)" }, // subtle shadow
+          boxShadow: { md: "0 0 10px rgba(0,0,0,0.05)" },
         }}
       >
         {/* Header */}
-       <Box
-  sx={{
-    px: 2,
-    py: 1.5,
-    borderBottom: "1px solid #e0e0e0",
-    display: "flex",
-    alignItems: "center",
-    gap: 1.5,
-    bgcolor: "#fff",
-  }}
->
-  {/* Back button for mobile only */}
-  {onBack && (
-    <IconButton
-      onClick={onBack}
-      sx={{       
-        mr: 1, // gives breathing room between icon and avatar
-      }}
-    >
-      <ArrowBackIcon />
-    </IconButton>
-  )}
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            borderBottom: "1px solid #e0e0e0",
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            bgcolor: "#fff",
+          }}
+        >
+          {onBack && (
+            <IconButton onClick={onBack} sx={{ mr: 1 }}>
+              <ArrowBackIcon />
+            </IconButton>
+          )}
 
-  <Avatar sx={{ width: 32, height: 32 }}>
-    {TITLES[chatId]?.[0] || "C"}
-  </Avatar>
+          <Avatar sx={{ width: 32, height: 32 }}>
+            {chatId?.[0]?.toUpperCase() || "C"}
+          </Avatar>
 
-  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-    {TITLES[chatId] || "Chat"}
-  </Typography>
-</Box>
-
+          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+            {chatId || "Chat"}
+          </Typography>
+        </Box>
 
         {/* Messages */}
         <Box
@@ -115,24 +93,18 @@ const ChatWindow = ({ chatId, onBack }) => {
             background: "linear-gradient(to bottom right, #b3c3f2ff, #e8ebf2)",
           }}
         >
-          {isServiceChat ? (
-            messages.length ? (
-              messages.map((m) => <MessageBubble key={m.id} msg={m} self={m.senderId === uid} />)
-            ) : (
-              <Typography color="text.secondary" sx={{ textAlign: "center", mt: 4 }}>
-                Say hi 👋 — no messages yet
-              </Typography>
-            )
+          {messages.length ? (
+            messages.map((m) => <MessageBubble key={m.id} msg={m} self={m.senderId === uid} />)
           ) : (
             <Typography color="text.secondary" sx={{ textAlign: "center", mt: 4 }}>
-              No messages yet
+              Say hi 👋 — no messages yet
             </Typography>
           )}
           <div ref={bottomRef} />
         </Box>
 
         {/* Input */}
-        {isServiceChat && user?.role !== "admin" && (
+        {isUserChat && (
           <Box
             sx={{
               borderTop: "1px solid #ddd",
