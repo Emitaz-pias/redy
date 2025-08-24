@@ -28,7 +28,7 @@ const MessageInput = ({ chatId, senderId }) => {
 
       // 2️⃣ Update lastMessage in current chat
       await setDoc(
-        doc(db, "chats", chatId),
+        doc(db, "chats", "service-user"),
         {
           lastMessage: {
             text: text.trim(),

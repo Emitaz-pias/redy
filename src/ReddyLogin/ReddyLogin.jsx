@@ -1,60 +1,55 @@
 import React, { useState } from "react";
 import { Box, Typography, TextField, Button } from "@mui/material";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from '../firebase';
-import rimage from '../images/rimage.svg';
+import { auth } from "../firebase";
+import rimage from "../images/rimage.svg";
 
 const ReddyLogin = () => {
   const navigate = useNavigate();
 
-  // Define a fixed domain for constructing the email from the username
-  let emailDomain = "@yourapp.com";
-  if (window.location.hostname === "redycl.netlify.app") {
-    emailDomain = "@reddycl.com";
-  }
-
   const [step, setStep] = useState(1);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [UserId, setUserId] = useState(""); // UserId instead of email
+  const [password, setPassword] = useState("");
 
-  const [focusedUsername, setFocusedUsername] = useState(false);
+  const [focusedUser, setFocusedUser] = useState(false);
   const [focusedPass, setFocusedPass] = useState(false);
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
+  // Step 1: UserId validation
   const handleNext = () => {
-    setError('');
-    if (!username.trim()) {
-      setError("Please enter your username.");
+    setError("");
+    if (!UserId.trim()) {
+      setError("Please enter your UserId.");
       return;
     }
+    // no regex check, just non-empty UserId
     setStep(2);
   };
 
+  // Step 2: Handle login
   const handleLogin = async () => {
-    setError('');
+    setError("");
     try {
-      let email;
-      // Check if the username already contains an "@"
-      if (username.includes('@')) {
-        // Use the username as is if it's already an email
-        email = username;
-      } else {
-        // Append the domain if it's just a username
-        email = `${username}${emailDomain}`;
+      let loginEmail = UserId.trim();
+
+      // If no @ in UserId, auto append @gmail.com
+      if (!loginEmail.includes("@")) {
+        loginEmail = loginEmail + "@gmail.com";
       }
-      
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/chat');
+
+      await signInWithEmailAndPassword(auth, loginEmail, password);
+      navigate("/chat");
     } catch (err) {
-      setError("Invalid username or password.");
+      console.error(err);
+      setError("Invalid UserId or password.");
     }
   };
 
   const handleEnter = (e) => {
-    if (e.key === 'Enter') {
-      if (step === 1 && username) {
+    if (e.key === "Enter") {
+      if (step === 1 && UserId) {
         handleNext();
       } else if (step === 2 && password) {
         handleLogin();
@@ -67,13 +62,13 @@ const ReddyLogin = () => {
     borderRadius: "10px",
     color: "white",
     input: { color: "white" },
-    '& .MuiOutlinedInput-notchedOutline': {
+    "& .MuiOutlinedInput-notchedOutline": {
       borderColor: "gray",
     },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
+    "&:hover .MuiOutlinedInput-notchedOutline": {
       borderColor: "gray",
     },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
       borderColor: "#f00",
     },
   });
@@ -91,9 +86,16 @@ const ReddyLogin = () => {
         px: 2,
       }}
     >
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}
+      >
         {/* Logo */}
-        <Box component="img" src={rimage} alt="Reddy Logo" sx={{ width: 100, height: 100 }} />
+        <Box
+          component="img"
+          src={rimage}
+          alt="Reddy Logo"
+          sx={{ width: 100, height: 100 }}
+        />
 
         <Typography variant="h5" fontWeight={600}>
           Login to Reddy
@@ -102,35 +104,43 @@ const ReddyLogin = () => {
           Welcome to the Web Application
         </Typography>
 
-        {/* Username Step */}
+        {/* UserId Step */}
         {step === 1 && (
           <>
             <TextField
               fullWidth
               variant="outlined"
-              label="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onKeyDown={handleEnter}
-              onFocus={() => setFocusedUsername(true)}
+              label="UserId"
+              value={UserId}
+              onChange={(e) => {const value = e.target.value;
+    // @ sign filter kore dibo
+    if (!value.includes("@")) {
+      setUserId(value);
+    }
+  }}
+  onKeyDown={(e) => {
+    if (e.key === "@" ) {
+      e.preventDefault(); // prevent typing @
+    } setUserId(e.target.value)}}              
+              onFocus={() => setFocusedUser(true)}
               onBlur={(e) => {
-                if (!e.target.value) setFocusedUsername(false);
+                if (!e.target.value) setFocusedUser(false);
               }}
               InputLabelProps={{
-                shrink: focusedUsername || !!username,
+                shrink: focusedUser || !!UserId,
                 sx: {
-                  color: 'transparent',
-                  '&.Mui-focused': { color: "red" },
+                  color: "transparent",
+                  "&.Mui-focused": { color: "red" },
                 },
               }}
               InputProps={{
-                notched: focusedUsername || !!username,
-                sx: textFieldStyle(focusedUsername),
+                notched: focusedUser || !!UserId,
+                sx: textFieldStyle(focusedUser),                 
               }}
               sx={{ mt: 2, width: 300 }}
             />
             {error && <Typography variant="body2" color="error">{error}</Typography>}
-            {username && (
+            {UserId && (
               <Button
                 variant="contained"
                 onClick={handleNext}
@@ -138,10 +148,10 @@ const ReddyLogin = () => {
                   backgroundColor: "#f00",
                   width: 300,
                   height: 50,
-                  fontWeight: 'bold',
+                  fontWeight: "bold",
                   fontSize: 16,
                   mt: 1,
-                  '&:hover': { backgroundColor: "#d50000" }
+                  "&:hover": { backgroundColor: "#d50000" },
                 }}
               >
                 NEXT
@@ -168,8 +178,8 @@ const ReddyLogin = () => {
               InputLabelProps={{
                 shrink: focusedPass || !!password,
                 sx: {
-                  color: 'transparent',
-                  '&.Mui-focused': { color: "red" },
+                  color: "transparent",
+                  "&.Mui-focused": { color: "red" },
                 },
               }}
               InputProps={{
@@ -187,10 +197,10 @@ const ReddyLogin = () => {
                   backgroundColor: "#f00",
                   width: 300,
                   height: 50,
-                  fontWeight: 'bold',
+                  fontWeight: "bold",
                   fontSize: 16,
                   mt: 1,
-                  '&:hover': { backgroundColor: "#d50000" }
+                  "&:hover": { backgroundColor: "#d50000" },
                 }}
               >
                 LOGIN
@@ -201,7 +211,7 @@ const ReddyLogin = () => {
 
         {/* Footer */}
         <Typography variant="body2" mt={4}>
-          Need Help?{' '}
+          Need Help?{" "}
           <Box component="span" sx={{ color: "#f44336", cursor: "pointer" }}>
             Reddy FAQ
           </Box>
