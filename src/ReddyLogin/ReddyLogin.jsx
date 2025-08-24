@@ -8,23 +8,25 @@ import rimage from '../images/rimage.svg';
 const ReddyLogin = () => {
   const navigate = useNavigate();
 
+  // Define a fixed domain for constructing the email from the username
+  let emailDomain = "@yourapp.com";
+  if (window.location.hostname === "redycl.netlify.app") {
+    emailDomain = "@reddycl.com";
+  }
+
   const [step, setStep] = useState(1);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const [focusedEmail, setFocusedEmail] = useState(false);
+  const [focusedUsername, setFocusedUsername] = useState(false);
   const [focusedPass, setFocusedPass] = useState(false);
 
   const [error, setError] = useState('');
 
   const handleNext = () => {
     setError('');
-    if (!email.trim()) {
-      setError("Please enter your email.");
-      return;
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setError("Please enter a valid email.");
+    if (!username.trim()) {
+      setError("Please enter your username.");
       return;
     }
     setStep(2);
@@ -33,16 +35,26 @@ const ReddyLogin = () => {
   const handleLogin = async () => {
     setError('');
     try {
+      let email;
+      // Check if the username already contains an "@"
+      if (username.includes('@')) {
+        // Use the username as is if it's already an email
+        email = username;
+      } else {
+        // Append the domain if it's just a username
+        email = `${username}${emailDomain}`;
+      }
+      
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/chat');
     } catch (err) {
-      setError("Invalid email or password.");
+      setError("Invalid username or password.");
     }
   };
 
   const handleEnter = (e) => {
     if (e.key === 'Enter') {
-      if (step === 1 && email) {
+      if (step === 1 && username) {
         handleNext();
       } else if (step === 2 && password) {
         handleLogin();
@@ -90,35 +102,35 @@ const ReddyLogin = () => {
           Welcome to the Web Application
         </Typography>
 
-        {/* Email Step */}
+        {/* Username Step */}
         {step === 1 && (
           <>
             <TextField
               fullWidth
               variant="outlined"
-              label="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              label="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               onKeyDown={handleEnter}
-              onFocus={() => setFocusedEmail(true)}
+              onFocus={() => setFocusedUsername(true)}
               onBlur={(e) => {
-                if (!e.target.value) setFocusedEmail(false);
+                if (!e.target.value) setFocusedUsername(false);
               }}
               InputLabelProps={{
-                shrink: focusedEmail || !!email,
+                shrink: focusedUsername || !!username,
                 sx: {
                   color: 'transparent',
                   '&.Mui-focused': { color: "red" },
                 },
               }}
               InputProps={{
-                notched: focusedEmail || !!email,
-                sx: textFieldStyle(focusedEmail),
+                notched: focusedUsername || !!username,
+                sx: textFieldStyle(focusedUsername),
               }}
               sx={{ mt: 2, width: 300 }}
             />
             {error && <Typography variant="body2" color="error">{error}</Typography>}
-            {email && (
+            {username && (
               <Button
                 variant="contained"
                 onClick={handleNext}
