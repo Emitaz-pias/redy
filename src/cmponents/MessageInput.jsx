@@ -12,14 +12,17 @@ const MessageInput = ({ chatId, senderId }) => {
 
     const message = {
       text,
-      senderId,
+      senderId,  // sender's uid
       createdAt: serverTimestamp(),
     };
 
     try {
-      await addDoc(collection(db, "chats", chatId, "messages"), message);
+      // Save message under service-user/messages collection
+      await addDoc(collection(db, "chats", "service-user", "messages"), message);
+
+      // Update last message and unread counts in chat doc
       await setDoc(
-        doc(db, "chats", chatId),
+        doc(db, "chats", "service-user"),
         {
           lastMessage: {
             text,
@@ -33,6 +36,7 @@ const MessageInput = ({ chatId, senderId }) => {
         },
         { merge: true }
       );
+
       setText("");
     } catch (error) {
       console.error("Message send error:", error);

@@ -18,14 +18,22 @@ const ReddyLogin = () => {
   const [focusedPass, setFocusedPass] = useState(false);
 
   const handleLogin = async () => {
-    setError('');
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/chat');
-    } catch (err) {
-      setError("Invalid email or password.");
+  setError("");
+  try {
+    let loginEmail = email;
+
+    // jodi user sudhu username type kore (emtiazpias383), tahole @gmail.com auto add
+    if (!loginEmail.includes("@")) {
+      loginEmail = loginEmail + "@gmail.com";
     }
-  };
+
+    await signInWithEmailAndPassword(auth, loginEmail, password);
+    navigate("/chat");
+  } catch (err) {
+    setError("Invalid username or password.");
+  }
+};
+
 
   const handleEnter = (e) => {
     if (e.key === 'Enter' && email && password) {

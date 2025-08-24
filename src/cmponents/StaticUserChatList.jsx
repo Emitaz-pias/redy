@@ -11,7 +11,7 @@ import {
 
 const staticUsers = [
   { id: "authenticationBot", lastMessage: "937229", updatedAt: "12:24 PM" },
-  { id: "Service User", lastMessage: "Your account has been logged into New s...", updatedAt: "Yesterday" },
+  { id: "Service User", role: "admin",lastMessage: "Your account has been logged into New s...", updatedAt: "Yesterday" },
   { id: "CRM Bot", lastMessage: "Привет, Kamal Uddin! Рады приветств...", updatedAt: "10 Dec" },
 ];
 

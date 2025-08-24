@@ -1,22 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  Box,
-  List,
-  ListItem,
-  Typography,
-  TextField,
-  Button
-} from "@mui/material";
-import {
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-  addDoc,
-  doc,
-  updateDoc,
-  serverTimestamp
-} from "firebase/firestore";
+import { Box, List, ListItem, TextField, Button } from "@mui/material";
+import { collection, query, orderBy, onSnapshot, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 
 const AdminChatWindow = ({ chatId }) => {
@@ -26,16 +10,11 @@ const AdminChatWindow = ({ chatId }) => {
 
   useEffect(() => {
     if (!chatId) return;
-
-    const q = query(
-      collection(db, "chats", chatId, "messages"),
-      orderBy("createdAt")
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp"));
+    const unsubscribe = onSnapshot(q, snapshot => {
       const msgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setMessages(msgs);
     });
-
     return () => unsubscribe();
   }, [chatId]);
 
@@ -46,23 +25,16 @@ const AdminChatWindow = ({ chatId }) => {
   const handleSend = async () => {
     if (!text.trim()) return;
 
-    const msgRef = collection(db, "chats", chatId, "messages");
-
-    await addDoc(msgRef, {
+    await addDoc(collection(db, "chats", chatId, "messages"), {
       text,
-      senderId: "admin",
-      createdAt: serverTimestamp()
+      sender: "admin",
+      timestamp: serverTimestamp()
     });
 
-    // update last message and reset unread count for admin
     const chatDocRef = doc(db, "chats", chatId);
     await updateDoc(chatDocRef, {
-      lastMessage: {
-        text,
-        timestamp: serverTimestamp(),
-        senderId: "admin"
-      },
-      [`unreadCount.${chatId}`]: 0 // reset unread count for this user
+      lastMessage: { text, timestamp: serverTimestamp(), sender: "admin" },
+      [`unreadCount.${chatId}`]: 0
     });
 
     setText("");
@@ -72,38 +44,23 @@ const AdminChatWindow = ({ chatId }) => {
     <Box sx={{ height: "70vh", overflowY: "auto", p: 2, border: "1px solid #ccc", borderRadius: 2 }}>
       <List>
         {messages.map(msg => (
-          <ListItem
-            key={msg.id}
-            sx={{ justifyContent: msg.senderId === "admin" ? "flex-end" : "flex-start" }}
-          >
-            <Box
-              sx={{
-                bgcolor: msg.senderId === "admin" ? "primary.main" : "grey.300",
-                color: msg.senderId === "admin" ? "white" : "black",
-                p: 1,
-                borderRadius: 2,
-                maxWidth: "70%"
-              }}
-            >
+          <ListItem key={msg.id} sx={{ justifyContent: msg.sender === "admin" ? "flex-end" : "flex-start" }}>
+            <Box sx={{
+              bgcolor: msg.sender === "admin" ? "primary.main" : "grey.300",
+              color: msg.sender === "admin" ? "white" : "black",
+              p: 1,
+              borderRadius: 2,
+              maxWidth: "70%"
+            }}>
               {msg.text}
             </Box>
           </ListItem>
         ))}
         <div ref={containerRef} />
       </List>
-
       <Box sx={{ display: "flex", mt: 2 }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          value={text}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && handleSend()}
-          placeholder="Type your message..."
-        />
-        <Button onClick={handleSend} disabled={!text.trim()} variant="contained" sx={{ ml: 1 }}>
-          Send
-        </Button>
+        <TextField fullWidth placeholder="Type message..." value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSend()} />
+        <Button variant="contained" onClick={handleSend} sx={{ ml: 1 }}>Send</Button>
       </Box>
     </Box>
   );

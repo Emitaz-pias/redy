@@ -20,16 +20,24 @@ const ChatWindow = ({ chatId, onBack }) => {
   const uid = user?.uid || "guest";
 
   useEffect(() => {
-    if (chatId !== "service-user") {
-      setMessages([]);
-      return;
-    }
-    const q = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"));
-    const unsub = onSnapshot(q, (snap) => {
-      setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
-    return () => unsub();
-  }, [chatId]);
+  const q = query(
+    collection(db, "chats", "service-user", "messages"),
+    orderBy("createdAt", "asc")
+  );
+
+  const unsub = onSnapshot(q, (snap) => {
+    const allMsgs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    // ✅ Only show messages related to this user (if not admin)
+    const filtered = user?.role === "admin"
+      ? allMsgs
+      : allMsgs.filter((msg) => msg.senderId === uid || msg.senderId === "admin");
+
+    setMessages(filtered);
+  });
+
+  return () => unsub();
+}, [chatId, user, uid]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -124,7 +132,7 @@ const ChatWindow = ({ chatId, onBack }) => {
         </Box>
 
         {/* Input */}
-        {isServiceChat && (
+        {isServiceChat && user?.role !== "admin" && (
           <Box
             sx={{
               borderTop: "1px solid #ddd",
