@@ -9,7 +9,7 @@ const ReddyLogin = () => {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
-  const [username, setUsername] = useState(""); // username instead of email
+  const [UserId, setUserId] = useState(""); // UserId instead of email
   const [password, setPassword] = useState("");
 
   const [focusedUser, setFocusedUser] = useState(false);
@@ -17,14 +17,14 @@ const ReddyLogin = () => {
 
   const [error, setError] = useState("");
 
-  // Step 1: Username validation
+  // Step 1: UserId validation
   const handleNext = () => {
     setError("");
-    if (!username.trim()) {
-      setError("Please enter your username.");
+    if (!UserId.trim()) {
+      setError("Please enter your UserId.");
       return;
     }
-    // no regex check, just non-empty username
+    // no regex check, just non-empty UserId
     setStep(2);
   };
 
@@ -32,9 +32,9 @@ const ReddyLogin = () => {
   const handleLogin = async () => {
     setError("");
     try {
-      let loginEmail = username.trim();
+      let loginEmail = UserId.trim();
 
-      // If no @ in username, auto append @gmail.com
+      // If no @ in UserId, auto append @gmail.com
       if (!loginEmail.includes("@")) {
         loginEmail = loginEmail + "@gmail.com";
       }
@@ -43,13 +43,13 @@ const ReddyLogin = () => {
       navigate("/chat");
     } catch (err) {
       console.error(err);
-      setError("Invalid username or password.");
+      setError("Invalid UserId or password.");
     }
   };
 
   const handleEnter = (e) => {
     if (e.key === "Enter") {
-      if (step === 1 && username) {
+      if (step === 1 && UserId) {
         handleNext();
       } else if (step === 2 && password) {
         handleLogin();
@@ -104,43 +104,43 @@ const ReddyLogin = () => {
           Welcome to the Web Application
         </Typography>
 
-        {/* Username Step */}
+        {/* UserId Step */}
         {step === 1 && (
           <>
             <TextField
               fullWidth
               variant="outlined"
-              label="Username"
-              value={username}
+              label="UserId"
+              value={UserId}
               onChange={(e) => {const value = e.target.value;
     // @ sign filter kore dibo
     if (!value.includes("@")) {
-      setUsername(value);
+      setUserId(value);
     }
   }}
   onKeyDown={(e) => {
     if (e.key === "@" ) {
       e.preventDefault(); // prevent typing @
-    } setUsername(e.target.value)}}              
+    } setUserId(e.target.value)}}              
               onFocus={() => setFocusedUser(true)}
               onBlur={(e) => {
                 if (!e.target.value) setFocusedUser(false);
               }}
               InputLabelProps={{
-                shrink: focusedUser || !!username,
+                shrink: focusedUser || !!UserId,
                 sx: {
                   color: "transparent",
                   "&.Mui-focused": { color: "red" },
                 },
               }}
               InputProps={{
-                notched: focusedUser || !!username,
+                notched: focusedUser || !!UserId,
                 sx: textFieldStyle(focusedUser),                 
               }}
               sx={{ mt: 2, width: 300 }}
             />
             {error && <Typography variant="body2" color="error">{error}</Typography>}
-            {username && (
+            {UserId && (
               <Button
                 variant="contained"
                 onClick={handleNext}
