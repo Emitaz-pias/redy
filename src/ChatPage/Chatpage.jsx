@@ -71,12 +71,17 @@ const ChatPage = () => {
   const currentChatId = activeChat || STATIC_USERS[0].id;
 console.log(activeChat)
   return (
-    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <Box sx={{ 
+      height: "100vh", 
+      display: "flex", 
+      flexDirection: "column", 
+      overflow: "hidden" 
+    }}>
       <AppBar
         position="static"
         elevation={0}
         sx={{
-          backgroundColor: colors.primary,
+          backgroundColor: 'white',
         }}
       >
         <Toolbar
@@ -94,23 +99,25 @@ console.log(activeChat)
             variant="h6"
             fontWeight="bold"
             sx={{
-              color: "#fff",
+              color: "#d32f2f",
               fontSize: { xs: "1rem", sm: "1.25rem" },
-              flexShrink: 0,
-              whiteSpace: "nowrap",
             }}
           >
             Reddy Chat
           </Typography>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1 } }}>
-            <IconButton sx={{ color: "#fff" }}>
+          <Box sx={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: { xs: 0.5, sm: 1 },
+          }}>
+            <IconButton sx={{ color: "#d32f2f" }}>
               <SearchRoundedIcon />
             </IconButton>
-            <IconButton sx={{ color: "#fff" }}>
+            <IconButton sx={{ color: "#d32f2f" }}>
               <MarkChatUnreadRoundedIcon />
             </IconButton>
-            <IconButton onClick={handleLogout} sx={{ color: "#fff" }}>
+            <IconButton onClick={handleLogout} sx={{ color: "#d32f2f" }}>
               <LogoutIcon />
             </IconButton>
           </Box>
@@ -123,10 +130,10 @@ console.log(activeChat)
           xs={12}
           md={4}
           sx={{
-            display: { xs: activeChat ? "none" : "block", md: "block" },
+            display: { xs: activeChat ? "none" : "flex", md: "flex" },
+            flexDirection: 'column',
             borderRight: { md: "1px solid #e0e0e0" },
             height: "100%",
-            overflowY: "auto",
             backgroundColor: colors.surface,
           }}
         >
@@ -142,7 +149,7 @@ console.log(activeChat)
           xs={12}
           md={8}
           sx={{
-            display: { xs: activeChat ? "block" : "none", md: "block" },
+            display: { xs: activeChat ? "flex" : "none", md: "flex" },
             height: "100%",
             flexDirection: "column",
             backgroundColor: "#f5f5f5",
@@ -177,7 +184,7 @@ console.log(activeChat)
               color: colors.icon,
             },
             "& .Mui-selected": {
-              color: colors.primary,
+              color: 'green',
             },
           }}
         >
@@ -191,8 +198,9 @@ console.log(activeChat)
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Service Not Available!</DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ color: "#f00" }}>
-            Ei service gula ei account er jonno projojjo na.
+          <DialogContentText >
+            This service is not available for this account.
+            Contact your retail team.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

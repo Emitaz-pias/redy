@@ -2,12 +2,10 @@ import { useEffect, useState, useRef } from "react";
 import {
   Box,
   Typography,
-  TextField,
-  IconButton,
   Paper,
   Toolbar,
+  Stack,
 } from "@mui/material";
-import SendIcon from "@mui/icons-material/Send";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   collection,
@@ -21,15 +19,23 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { useChat } from "../ChatContext/ChatContext";
+import MessageInput from "./MessageInput";
+import IconButton from "@mui/material/IconButton";
+
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return "";
+  const date = timestamp.toDate();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
 
 const ChatWindow = ({ chatId, onBack }) => {
   const { user } = useChat();
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
+  const [chatData, setChatData] = useState(null);
   const messagesEndRef = useRef(null);
-
   const uid = user?.uid;
-
   const isBotChat = chatId === "аутентификацияBot" || chatId === "CRM-бот";
 
   useEffect(() => {
@@ -37,17 +43,33 @@ const ChatWindow = ({ chatId, onBack }) => {
   }, [messages]);
 
   useEffect(() => {
-    if (!chatId || isBotChat) {
+    if (!chatId) {
       setMessages([]);
+      setChatData(null);
+      return;
+    }
+    
+    if (isBotChat) {
+      setMessages([]);
+      setChatData({
+        userName: chatId
+      });
       return;
     }
 
+    const chatDocRef = doc(db, "chats", `chat_${chatId}_admin`);
+
+    const unsubscribeChat = onSnapshot(chatDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            setChatData(docSnap.data());
+        }
+    });
+
     const messagesQuery = query(
-      collection(db, "chats", `chat_${chatId}_admin`, "messages"),
+      collection(chatDocRef, "messages"),
       orderBy("timestamp")
     );
-console.log(chatId)
-    const unsubscribe = onSnapshot(messagesQuery, (querySnapshot) => {
+    const unsubscribeMessages = onSnapshot(messagesQuery, (querySnapshot) => {
       const fetchedMessages = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -55,15 +77,14 @@ console.log(chatId)
       setMessages(fetchedMessages);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeChat();
+      unsubscribeMessages();
+    };
   }, [chatId, isBotChat]);
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim() || isBotChat) return;
-
-    const messageText = newMessage;
-    setNewMessage("");
+  const handleSendMessage = async (text) => {
+    if (!text.trim() || isBotChat) return;
 
     try {
       const chatDocRef = doc(db, "chats", `chat_${chatId}_admin`);
@@ -71,7 +92,7 @@ console.log(chatId)
         chatDocRef,
         {
           lastMessage: {
-            text: messageText,
+            text: text,
             timestamp: serverTimestamp(),
             sender: user.email,
           },
@@ -81,12 +102,12 @@ console.log(chatId)
         },
         { merge: true }
       );
-
       await addDoc(collection(chatDocRef, "messages"), {
-        text: messageText,
+        text: text,
         sender: uid,
         timestamp: serverTimestamp(),
       });
+      
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -107,6 +128,8 @@ console.log(chatId)
       </Box>
     );
   }
+  
+  const chatPartnerName = user?.email?.slice(0, 6) || chatData?.userName || 'Loading...';
 
   return (
     <Box
@@ -117,7 +140,6 @@ console.log(chatId)
         backgroundColor: "#f5f5f5",
       }}
     >
-      {/* Back button and header */}
       <Toolbar variant="dense" sx={{ borderBottom: "1px solid #ddd" }}>
         <IconButton
           edge="start"
@@ -133,73 +155,94 @@ console.log(chatId)
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h6" noWrap component="div">
-  {isBotChat ? chatId : user?.email?.slice(0, 6)}
-</Typography>
+          {isBotChat ? chatId : chatPartnerName}
+        </Typography>
       </Toolbar>
 
-      {/* Message Display Area */}
+      {/* মেসেজ ডিসপ্লে এরিয়া */}
       <Paper
         elevation={0}
-        sx={{ flex: 1, overflowY: "auto", p: 2, backgroundColor: "inherit" }}
+        sx={{ 
+          flex: 1, 
+          overflowY: "auto", 
+          p: 2, 
+          backgroundColor: "inherit",
+          // নতুন লজিক: যদি কোনো মেসেজ না থাকে এবং এটি একটি বট চ্যাট হয়
+          ...((messages.length === 0 && isBotChat) && { 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center"
+          })
+        }}
       >
-        {messages.map((msg) => (
-          <Box
-            key={msg.id}
+        {messages.length === 0 && isBotChat ? (
+          <Paper
+            elevation={1}
             sx={{
-              display: "flex",
-              justifyContent: msg.sender === uid ? "flex-end" : "flex-start",
-              mb: 1.5,
+              p: 1.5,
+              borderRadius: "20px",
+              bgcolor: "background.paper",
+              color: "text.primary",
+              maxWidth: "70%",
+              wordWrap: "break-word",
+              textAlign: "center"
             }}
           >
-            <Paper
-              elevation={1}
+            <Typography variant="body1">
+              {chatId === "CRM-бот" ? "Hello, I am the CRM bot. How can I help you?" : "Welcome! Please use this chat for authentication issues."}
+            </Typography>
+          </Paper>
+        ) : (
+          messages.map((msg) => (
+            <Box
+              key={msg.id}
               sx={{
-                p: 1.5,
-                borderRadius:
-                  msg.sender === uid
-                    ? "20px 20px 5px 20px"
-                    : "20px 20px 20px 5px",
-                bgcolor:
-                  msg.sender === uid ? "#d32f2f" : "background.paper",
-                color: msg.sender === uid ? "primary.contrastText" : "text.primary",
-                maxWidth: "70%",
-                wordWrap: "break-word",
+                display: "flex",
+                justifyContent: msg.sender === uid ? "flex-end" : "flex-start",
+                mb: 1.5,
               }}
             >
-              <Typography variant="body1">{msg.text}</Typography>
-            </Paper>
-          </Box>
-        ))}
+              <Stack
+                direction="column"
+                alignItems={msg.sender === uid ? "flex-end" : "flex-start"}
+              >
+                <Paper
+                  elevation={1}
+                  sx={{
+                    p: 1.5,
+                    borderRadius:
+                      msg.sender === uid
+                        ? "20px 20px 5px 20px"
+                        : "20px 20px 20px 5px",
+                    bgcolor:
+                      msg.sender === uid ? "#d32f2f" : "background.paper",
+                    color: msg.sender === uid ? "primary.contrastText" : "text.primary",
+                    maxWidth: "70%",
+                    wordWrap: "break-word",
+                  }}
+                >
+                  <Typography variant="body1">{msg.text}</Typography>
+                </Paper>
+                <Typography variant="caption" sx={{ mt: 0.5, color: "text.secondary" }}>
+                  {formatTimestamp(msg.timestamp)}
+                </Typography>
+              </Stack>
+            </Box>
+          ))
+        )}
         <div ref={messagesEndRef} />
       </Paper>
 
-      {/* Message Input Area */}
+      {/* মেসেজ ইনপুট এরিয়া */}
       <Box sx={{ p: 2, backgroundColor: "background.paper" }}>
         {isBotChat ? (
           <Typography
             sx={{ color: "text.secondary", textAlign: "center", py: 1 }}
           >
-            You cannot reply to this bot.
+            You cannot reply to this bot with your current account permissions.
           </Typography>
         ) : (
-          <Box component="form" onSubmit={handleSendMessage} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              size="small"
-              placeholder="Type a message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "20px",
-                },
-              }}
-            />
-            <IconButton type="submit" sx={{color:'#d32f2f'}} aria-label="send message">
-              <SendIcon />
-            </IconButton>
-          </Box>
+          <MessageInput onSend={handleSendMessage} />
         )}
       </Box>
     </Box>
