@@ -110,7 +110,7 @@ const ReddyLogin = () => {
             <TextField
               fullWidth
               variant="outlined"
-              label="USERID"
+              label="User ID"
               value={UserId}
               onChange={(e) => {const value = e.target.value;
     // @ sign filter kore dibo
@@ -166,7 +166,7 @@ const ReddyLogin = () => {
             <TextField
               fullWidth
               variant="outlined"
-              label="PASSWORD"
+              label="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

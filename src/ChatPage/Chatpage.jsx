@@ -99,7 +99,7 @@ console.log(activeChat)
             variant="h6"
             fontWeight="bold"
             sx={{
-              color: "#d32f2f",
+              color: "black",
               fontSize: { xs: "1rem", sm: "1.25rem" },
             }}
           >
@@ -111,13 +111,13 @@ console.log(activeChat)
             alignItems: "center", 
             gap: { xs: 0.5, sm: 1 },
           }}>
-            <IconButton sx={{ color: "#d32f2f" }}>
+            <IconButton >
               <SearchRoundedIcon />
             </IconButton>
-            <IconButton sx={{ color: "#d32f2f" }}>
+            <IconButton >
               <MarkChatUnreadRoundedIcon />
             </IconButton>
-            <IconButton onClick={handleLogout} sx={{ color: "#d32f2f" }}>
+            <IconButton onClick={handleLogout} >
               <LogoutIcon />
             </IconButton>
           </Box>

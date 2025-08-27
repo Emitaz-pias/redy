@@ -149,7 +149,7 @@ const ChatWindow = ({ chatId, onBack }) => {
           sx={{
             mr: 2,
             display: { xs: "inline-flex", md: "none" },
-            color: "#d32f2f",
+            color: "grey",
           }}
         >
           <ArrowBackIcon />

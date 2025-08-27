@@ -28,10 +28,10 @@ const MessageInput = ({ onSend }) => {
 
   return (
     <Box display="flex" alignItems="center" p={1} borderTop="1px solid #ccc">
-      <IconButton sx={{color:'#d32f2f'}} onClick={handleOpenEmoji}>
+      <IconButton onClick={handleOpenEmoji}>
         <EmojiEmotionsIcon />
       </IconButton>
-      <IconButton sx={{color:'#d32f2f'}} onClick={handleAttachFile}>
+      <IconButton  onClick={handleAttachFile}>
         <AttachFileIcon />
       </IconButton>
 
@@ -42,25 +42,25 @@ const MessageInput = ({ onSend }) => {
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Type a message..."
-       sx={{
-    mx: 1,
-    "& .MuiOutlinedInput-root": {
-      "&.Mui-focused fieldset": {
-        borderColor: "#d32f2f",
-      },
-      "&:hover fieldset": {
-        borderColor: "#d32f2f",
-      },
-    },
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: "#d32f2f",
-    },
-  }}
+  //      sx={{
+  //   mx: 1,
+  //   "& .MuiOutlinedInput-root": {
+  //     "&.Mui-focused fieldset": {
+  //       borderColor: "#d32f2f",
+  //     },
+  //     "&:hover fieldset": {
+  //       borderColor: "#d32f2f",
+  //     },
+  //   },
+  //   "& .MuiInputLabel-root.Mui-focused": {
+  //     color: "#d32f2f",
+  //   },
+  // }}
       />
-      <IconButton sx={{color:'#d32f2f'}} onClick={handleVoiceNote}>
+      <IconButton  onClick={handleVoiceNote}>
         <MicIcon />
       </IconButton>
-      <IconButton sx={{color:'#d32f2f'}} onClick={handleSend}>
+      <IconButton  onClick={handleSend}>
         <SendIcon />
       </IconButton>
     </Box>

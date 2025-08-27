@@ -81,7 +81,7 @@ const UserChatList = ({ onSelectChat, activeChat }) => {
   // মূল পরিবর্তনটি এই return স্টেটমেন্টের মধ্যে করা হয়েছে
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Typography variant="h6" sx={{ p: 1 , color: "#d32f2f" }}>
+      <Typography variant="h6" sx={{ p: 1 , }}>
         All Chats
       </Typography>
       <Box sx={{ flex: 1, overflowY: 'auto' }}>
