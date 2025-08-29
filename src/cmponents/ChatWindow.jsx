@@ -155,7 +155,7 @@ const ChatWindow = ({ chatId, onBack }) => {
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h6" noWrap component="div">
-          {isBotChat ? chatId : chatPartnerName}
+          {isBotChat ? chatId : 'Service Admin'}
         </Typography>
       </Toolbar>
 
